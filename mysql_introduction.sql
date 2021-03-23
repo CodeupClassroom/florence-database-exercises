@@ -1,3 +1,5 @@
+-- These are the example queries in the lesson
+
 SELECT * FROM mysql.user;
 SELECT user, host FROM mysql.user;
 SELECT * FROM mysql.help_topic;
