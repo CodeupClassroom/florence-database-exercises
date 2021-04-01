@@ -1,10 +1,13 @@
 USE employees;
 
--- 1
+-- 1 Find all the current employees with the same hire date as employee 101010 using a sub-query.
+
+-- First I need to grab the hire date for employee number 101010, so I can use this value to filter.
 SELECT hire_date
 FROM employees
 WHERE emp_no = 101010;
 
+-- Next I will use this value to filter for other employees who share the same hire date.
 SELECT
 	first_name,
 	last_name
@@ -14,14 +17,26 @@ WHERE hire_date IN (
 					FROM employees
 					WHERE emp_no = 101010);
 					
--- 2
+-- 2 Find all the titles ever held by all current employees with the first name Aamod.
+
 SELECT *
 FROM titles;
 
+-- First I need to get a list of employee numbers, unique identifiers, for employees with the name Aamod.
 SELECT emp_no
 FROM employees
 WHERE first_name = 'Aamod';
 
+-- Next, I can return the titles for employees with an employee number in the list I'm grabbing from the employees table.
+SELECT 
+	title
+FROM titles
+WHERE emp_no IN (
+				SELECT emp_no
+				FROM employees
+				WHERE first_name = 'Aamod');
+
+-- I can even go a step further if I want and check out the most common title for employees named Aamod.
 SELECT 
 	title,
 	COUNT(title) AS number_of_employees
@@ -33,24 +48,33 @@ WHERE emp_no IN (
 GROUP BY title
 ORDER BY number_of_employees DESC;
 
--- 3
 
--- employees who no longer work for the company
+-- 3 How many people in the employees table are no longer working for the company? Give the answer in a comment in your code.
+
+-- Here I'm exploring the dept_emp table before writing my queries. (333_603 records in the dept_emp table)
+SELECT *
+FROM dept_emp;
+
 SELECT 
 	COUNT(*) AS number_of_records 
 FROM dept_emp;
 
--- do we have repeats of emp_no in the dept_emp table?
+-- Here I'm exploring the employees table ebfore writing my queries. (300_024)
+SELECT
+	COUNT(*) AS number_of_employees
+FROM employees;
+
+-- Do we have repeats of emp_no in the dept_emp table? (300_024 unique employee numbers in the dept_emp table)
 SELECT 
 	COUNT(DISTINCT emp_no) AS unique_employee_nos
 FROM dept_emp;
 
--- employee numbers of current employees
-SELECT DISTINCT emp_no
+-- First, I select all of the employee numbers for current employee departments.
+SELECT emp_no
 FROM dept_emp
 WHERE to_date = '9999-01-01';
 
--- number of employees in the employees table who no longer work for the company.
+-- Next, I use these employee numbers to filter for employees who no longer work for the company. I'll get a count. (59_900)
 SELECT 
 	COUNT(*) AS number_of_non_employees
 FROM employees
@@ -65,7 +89,7 @@ SELECT emp_no
 FROM salaries
 WHERE to_date = '9999-01-01';
 
--- Return count of employees whose emp_no is not in this current employees list.
+-- Return count of employees whose emp_no is not in this current employees list. (59_900 employees)
 SELECT
 	COUNT(*)
 FROM employees
@@ -75,28 +99,29 @@ WHERE emp_no NOT IN (
 					WHERE to_date = '9999-01-01'
 					);
 					
--- 4
+-- 4 Find all the current department managers that are female. List their names in a comment in your code.
 
--- Get the employees number of current managers.
+-- First, grab the employee numbers of current managers.
 SELECT emp_no
 FROM dept_manager
 WHERE to_date = '9999-01-01';
 
--- Use employees to pull in gender as a filter and return current female dept managers.
+-- Next, use employees to pull in gender as a filter and return current female dept managers. (4 current managers are female.)
 SELECT *
 FROM employees
 WHERE gender = 'F'
 	AND emp_no IN (
 					SELECT emp_no
-					FROM dept_manager);
+					FROM dept_manager
+					WHERE to_date = '9999-01-01');
 					
--- 5
+-- 5 Find all the employees who currently have a higher salary than the companies overall, historical average salary.
 
--- Calculate historical average salary (historical average salary 63810.7448)
+-- First, I calculate the historical average salary (historical average salary 63810.7448)
 SELECT AVG(salary)
 FROM salaries;
 
--- Join employees and salaries tables to filter for current salaries > our calculated historical average above.
+-- Next, I join employees and salaries tables to filter for current salaries > our calculated historical average above.
 -- Filter for current salaries in Join. (154_543 employees returned)
 SELECT 
 	e.emp_no,
@@ -125,10 +150,9 @@ WHERE salary > (
 				)
 	AND to_date = '9999-01-01';
 
--- 6
--- Get the number of salaries that are within 1 standard deviation from the current highest salary.
+-- 6 How many current salaries are within 1 standard deviation of the current highest salary? (Hint: you can use a built in function to calculate the standard deviation.) What percentage of all salaries is this?
 
--- What are the min, max, and standard deviation of the current salaries out of curiosity. I'm getting my bearings here.
+-- What are the min, max, and standard deviation of the current salaries out of curiosity. I'm exploring a little here.
 SELECT
 	MAX(salary) AS max_salary,
 	MIN(salary) AS min_salary,
@@ -136,13 +160,13 @@ SELECT
 FROM salaries
 WHERE to_date > CURDATE();
 
--- Calculate the cutoff for salaries that are within one standard deviation of the highest salary. (140910.04066365326)
+-- First, I calculate the cutoff for current salaries that are within one standard deviation of the highest salary. (140910.04066365326)
 SELECT
 	MAX(salary) - STDDEV(salary)
 FROM salaries
 WHERE to_date > CURDATE();
 
--- Now I can find the number of current salaries >= the above amount. (83 records returned)
+-- Now I can find the number of current salaries >= the above amount. (The value 83 is returned)
 SELECT
 	COUNT(salary)
 FROM salaries
@@ -154,13 +178,13 @@ WHERE to_date > CURDATE()
 					WHERE to_date > CURDATE()
 					);
 					
--- Count of all current salaries. (240_124 current salaries)
+-- Next, grab a count of all current salaries. (240_124 current salaries)
 SELECT
 	COUNT(salary)
 FROM salaries
 WHERE to_date > CURDATE();
 
--- Now I can divide the numbers of salaries within 1 standard deviation of the max salary by number of all of the current salaries and convert it into a percentage.
+-- Now I can divide the numbers of salaries within 1 standard deviation of the max salary by number of all of the current salaries and convert it into a percentage. I can display it using a SELECT statement.
 -- Basically, 83 / 240_124 * 100
 SELECT
 (SELECT
@@ -178,4 +202,6 @@ WHERE to_date > CURDATE()
 	COUNT(salary)
 FROM salaries
 WHERE to_date > CURDATE()) * 100 AS percent_of_salaries;
+
+
 
