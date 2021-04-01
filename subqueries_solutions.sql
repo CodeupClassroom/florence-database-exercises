@@ -2,20 +2,30 @@ USE employees;
 
 -- 1 Find all the current employees with the same hire date as employee 101010 using a sub-query.
 
--- First I need to grab the hire date for employee number 101010, so I can use this value to filter.
+SELECT *
+FROM employees;
+
+SELECT *
+FROM dept_emp;
+
+-- First, I need to grab the hire date for employee number 101010, so I can use this value to filter.
 SELECT hire_date
 FROM employees
 WHERE emp_no = 101010;
 
--- Next I will use this value to filter for other employees who share the same hire date.
+-- Next, I will use this value to filter for other employees who share the same hire date and the salaries table to filter for current employees.
 SELECT
 	first_name,
-	last_name
+	last_name,
+	hire_date
 FROM employees
-WHERE hire_date IN (
+JOIN salaries USING(emp_no)
+WHERE to_date > CURDATE()
+	AND hire_date = (
 					SELECT hire_date
 					FROM employees
 					WHERE emp_no = 101010);
+
 					
 -- 2 Find all the titles ever held by all current employees with the first name Aamod.
 
@@ -25,7 +35,9 @@ FROM titles;
 -- First I need to get a list of employee numbers, unique identifiers, for employees with the name Aamod.
 SELECT emp_no
 FROM employees
-WHERE first_name = 'Aamod';
+JOIN salaries USING(emp_no)
+WHERE first_name = 'Aamod'
+	AND to_date > CURDATE();
 
 -- Next, I can return the titles for employees with an employee number in the list I'm grabbing from the employees table.
 SELECT 
@@ -34,7 +46,9 @@ FROM titles
 WHERE emp_no IN (
 				SELECT emp_no
 				FROM employees
-				WHERE first_name = 'Aamod');
+				JOIN salaries USING(emp_no)
+				WHERE first_name = 'Aamod'
+					AND to_date > CURDATE());
 
 -- I can even go a step further if I want and check out the most common title for employees named Aamod.
 SELECT 
@@ -44,14 +58,15 @@ FROM titles
 WHERE emp_no IN (
 				SELECT emp_no
 				FROM employees
-				WHERE first_name = 'Aamod')
+				JOIN salaries USING(emp_no)
+				WHERE first_name = 'Aamod'
+					AND to_date > CURDATE())
 GROUP BY title
 ORDER BY number_of_employees DESC;
 
-
 -- 3 How many people in the employees table are no longer working for the company? Give the answer in a comment in your code.
 
--- Here I'm exploring the dept_emp table before writing my queries. (333_603 records in the dept_emp table)
+-- Here I'm exploring the dept_emp table before writing my queries. (331_603 records in the dept_emp table)
 SELECT *
 FROM dept_emp;
 
@@ -64,7 +79,7 @@ SELECT
 	COUNT(*) AS number_of_employees
 FROM employees;
 
--- Do we have repeats of emp_no in the dept_emp table? (300_024 unique employee numbers in the dept_emp table)
+-- Do we have repeats of emp_no in the dept_emp table? (Yes; there are 300_024 unique employee numbers in the dept_emp table)
 SELECT 
 	COUNT(DISTINCT emp_no) AS unique_employee_nos
 FROM dept_emp;
@@ -202,6 +217,7 @@ WHERE to_date > CURDATE()
 	COUNT(salary)
 FROM salaries
 WHERE to_date > CURDATE()) * 100 AS percent_of_salaries;
+
 
 
 
