@@ -117,3 +117,19 @@ SELECT
 	COUNT(*)
 FROM employees
 GROUP BY decade;
+
+-- Bonus: What is the current average salary for each of the following department groups: R&D, Sales & Marketing, Prod & QM, Finance & HR, Customer Service?
+
+SELECT
+	CASE
+		WHEN dept_name IN('Research', 'Development') THEN 'R&D'
+		WHEN dept_name IN('Sales', 'Marketing') THEN 'Sales & Marketing'
+		WHEN dept_name IN('Production', 'Quality Management') THEN 'QM'
+		WHEN dept_name IN('Finance', 'Human Resources') THEN 'Finance & HR'
+		ELSE 'Customer Service'
+	END AS department_group,
+	ROUND(AVG(salary), 2) AS average_salary
+FROM salaries AS s
+JOIN employees_with_departments AS ewd ON s.emp_no = ewd.emp_no
+	AND s.to_date > CURDATE()
+GROUP BY department_group;
