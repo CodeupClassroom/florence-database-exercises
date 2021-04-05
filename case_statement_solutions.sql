@@ -85,7 +85,7 @@ JOIN (SELECT
 			AND de.to_date = last_dept.max_date
 JOIN employees AS e ON e.emp_no = de.emp_no;
 
--- Ryan's super smooth Temp Table solve! (You have to run this in your user database.)
+-- Solve it with a Temp Table solve! (You have to run this in your user database.)
 
 create table employees_still_with_company as (
 	select 
