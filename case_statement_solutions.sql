@@ -85,25 +85,6 @@ JOIN (SELECT
 			AND de.to_date = last_dept.max_date
 JOIN employees AS e ON e.emp_no = de.emp_no;
 
--- Solve it with a Temp Table solve! (You have to run this in your user database.)
-
-create table employees_still_with_company as (
-	select 
-		emp_no, 
-		hire_date, 
-		max(to_date) as to_date
-	from employees.employees
-	join employees.dept_emp using (emp_no)
-	join employees.departments using (dept_no)
-	group by emp_no
-);
-
-SELECT *
-FROM employees_still_with_company;
-
-select *, if (to_date > curdate(), true, false) AS current_employee
-from employees_still_with_company;
-
 -- 2. Write a query that returns all employee names (previous and current), and a new column 'alpha_group' that returns 'A-H', 'I-Q', or 'R-Z' depending on the first letter of their last name.
 
 SELECT
